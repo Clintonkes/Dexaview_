@@ -7,7 +7,7 @@ uvicorn[standard]==0.30.6
 
 # Database
 sqlalchemy==2.0.35
-aiomysql==0.2.0          # async MySQL driver
+asyncpg==0.29.0          # async PostgreSQL driver
 alembic==1.13.3          # database migrations
 
 # Authentication

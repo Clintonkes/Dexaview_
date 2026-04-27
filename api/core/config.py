@@ -20,8 +20,16 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    # Database connection string (async MySQL driver)
-    DATABASE_URL: str = "mysql+aiomysql://root:password@localhost:3306/dexaview"
+    # Database connection string
+    DATABASE_URL: str = "postgresql+asyncpg://postgres:password@localhost:5432/dexaview"
+
+    @property
+    def async_database_url(self) -> str:
+        if self.DATABASE_URL.startswith("postgres://"):
+            return self.DATABASE_URL.replace("postgres://", "postgresql+asyncpg://", 1)
+        elif self.DATABASE_URL.startswith("postgresql://"):
+            return self.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
+        return self.DATABASE_URL
 
     # JWT signing key – generate with: python -c "import secrets; print(secrets.token_hex(32))"
     SECRET_KEY: str = "change-me-in-production"

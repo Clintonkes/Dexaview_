@@ -25,7 +25,7 @@ from api.core.config import settings
 # pool_pre_ping=True reconnects automatically if the MySQL server drops idle
 # connections (common in cloud-hosted databases with short idle timeouts)
 engine = create_async_engine(
-    settings.DATABASE_URL,
+    settings.async_database_url,
     echo=False,          # set True for SQL debug logging
     pool_pre_ping=True,
     pool_size=10,
