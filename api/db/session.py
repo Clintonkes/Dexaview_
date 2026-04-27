@@ -82,5 +82,11 @@ async def create_tables():
     # Import models here to ensure they are registered on Base.metadata
     import api.models  # noqa: F401
 
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    import logging
+    try:
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        logging.info("Successfully connected to the database and created tables.")
+    except Exception as e:
+        logging.error(f"FATAL DB ERROR during startup: {e}")
+        # Not re-raising to allow the app to boot and reveal the error in the logs
