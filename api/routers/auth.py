@@ -13,6 +13,7 @@ It validates the Authorization: Bearer <token> header on every protected route.
 """
 
 from datetime import datetime, timedelta, timezone
+from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -37,6 +38,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # FastAPI OAuth2 helper – reads the Bearer token from the Authorization header
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
+oauth2_scheme_optional = OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=False)
 
 
 def hash_password(plain: str) -> str:
@@ -197,6 +199,35 @@ async def get_current_user(
     user = await db.get(User, int(user_id))
     if user is None or not user.is_active:
         raise credentials_exc
+
+    return user
+
+
+async def get_current_user_optional(
+    token: Optional[str] = Depends(oauth2_scheme_optional),
+    db: AsyncSession = Depends(get_db),
+) -> Optional[User]:
+    """
+    FastAPI dependency that decodes the Bearer JWT and returns the
+    corresponding User row if valid. Returns None if the token is missing,
+    invalid, or expired.
+    """
+    if not token:
+        return None
+
+    try:
+        payload = jwt.decode(
+            token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
+        )
+        user_id: str = payload.get("sub")
+        if user_id is None:
+            return None
+    except JWTError:
+        return None
+
+    user = await db.get(User, int(user_id))
+    if user is None or not user.is_active:
+        return None
 
     return user
 

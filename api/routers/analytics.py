@@ -20,7 +20,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.db.session import get_db
 from api.models import User, WatchEvent
-from api.routers.auth import get_current_user
+from api.routers.auth import get_current_user, get_current_user_optional
 
 router = APIRouter()
 
@@ -81,7 +81,7 @@ class VideoStatsOut(BaseModel):
 async def record_watch_event(
     payload: WatchEventIn,
     db: AsyncSession = Depends(get_db),
-    current_user: Optional[User] = None,  # anonymous viewing is allowed
+    current_user: Optional[User] = Depends(get_current_user_optional),  # anonymous viewing is allowed
 ):
     """
     Records a single Education Player watch-time event.
